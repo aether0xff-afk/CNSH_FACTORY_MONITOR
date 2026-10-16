@@ -9,7 +9,7 @@
 PowerShell에서 압축을 푼 디렉터리로 이동:
 
 ```powershell
-cd C:\FactoryMonitor
+cd C:\CNSH_FACTORY_MONITOR
 powershell -ExecutionPolicy Bypass -File .\setup_windows.ps1
 notepad .env
 ```
@@ -29,6 +29,8 @@ notepad .env
 ```
 
 접속: **http://127.0.0.1:8000** (브라우저에서 사이트 계정 입력)
+
+설치 스크립트는 프로젝트 폴더에 `.conda` 전용 Conda 환경(Python 3.13)을 만들고 라이브러리를 설치합니다. Windows `py` 런처나 별도의 `venv`가 필요하지 않습니다. `start_server.cmd`는 해당 환경의 `python.exe`를 직접 실행하므로 Windows 작업 스케줄러에서도 Conda 활성화가 필요 없습니다. 기존 `.env`와 `factories.json`은 재설치해도 보존됩니다.
 
 설치 스크립트가 `factories.example.json`에서 개인 설정 파일 `factories.json`을 생성합니다. **실제 서버 상자 좌표로 수정한 다음** 첫 실행을 하세요. 이후 첫 실행 시 등록된 공장이 자동으로 DB에 추가됩니다. 이후 웹의 **공장 등록** 버튼에서 공장을 추가할 수 있습니다. SQLite DB는 `data/factory.db`로 저장되며 앱을 재시작해도 보존됩니다.
 
@@ -86,7 +88,7 @@ Cloudflare에서 관리하는 도메인이 있어야 고정된 사용자 지정 
 - 작업 스케줄러 → **작업 만들기**
 - **일반**: `FactoryMonitor`, `사용자의 로그온 여부에 관계없이 실행`, 필요할 때 충분한 파일 접근 권한이 있는 Windows 계정 선택
 - **트리거**: `시작할 때(At startup)`
-- **동작**: `프로그램 시작`, `C:\FactoryMonitor\start_server.cmd` (실제 압축 해제 경로로 수정)
+- **동작**: `프로그램 시작`, `C:\CNSH_FACTORY_MONITOR\start_server.cmd` (실제 압축 해제 경로로 수정)
 - **설정**: 실패 시 재시작, 기존 인스턴스가 있으면 새 인스턴스를 시작하지 않음
 - 작업을 한 번 수동으로 실행해 `http://127.0.0.1:8000`과 DB 새 기록이 정상인지 확인
 
@@ -113,4 +115,4 @@ Cloudflare의 `cloudflared`는 위 명령대로 설치하면 **Windows 서비스
 
 ## GitHub 배포 관련
 
-공개 저장소에는 비밀번호와 실제 서버 좌표를 올리지 마세요. `.env`, `factories.json`, `data/`, `logs/`는 `.gitignore`로 제외됩니다. 클론 후 `setup_windows.ps1`로 개인 설정 파일을 만들고 실제 좌표/암호를 설정하세요.
+공개 저장소에는 비밀번호와 실제 서버 좌표를 올리지 마세요. `.env`, `factories.json`, `.conda/`, `data/`, `logs/`는 `.gitignore`로 제외됩니다. 클론 후 `setup_windows.ps1`로 개인 설정 파일을 만들고 실제 좌표/암호를 설정하세요.
