@@ -1,0 +1,10 @@
+[
+  {
+    "name": "크리퍼 농장",
+    "dimension": "minecraft:overworld",
+    "item_id": "minecraft:gunpowder",
+    "containers": [[100, 64, 200], [101, 64, 200]],
+    "slots_per_container": 27,
+    "stack_size": 64
+  }
+]
