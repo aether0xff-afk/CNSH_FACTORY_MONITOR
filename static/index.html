@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="dark" />
-  <title>Factory Monitor · Minecraft</title>
-  <link rel="stylesheet" href="/static/site.css" />
-  <script src="/static/app.js" defer></script>
+  <meta name="color-scheme" content="light" />
+  <title>Factory Monitor</title>
+  <link rel="stylesheet" href="/static/site.css?v=pastel-1" />
+  <script src="/static/app.js?v=pastel-1" defer></script>
 </head>
 <body>
   <header class="site-header">
-    <div class="brand"><div class="brand-mark">▦</div><div><strong>FACTORY<span>MONITOR</span></strong><small>MINECRAFT AUTOMATION OBSERVABILITY</small></div></div>
-    <div class="header-right"><span id="server-indicator" class="connection"><i></i> 연결 확인 중</span><button id="add-button" class="button primary">＋ 공장 등록</button></div>
+    <div class="brand"><div class="brand-mark">▦</div><div><strong>Factory <span>Monitor</span></strong><small>Minecraft factory dashboard</small></div></div>
+    <div class="header-right"><span id="server-indicator" class="connection"><i></i> 연결 확인 중</span><button id="add-button" class="button primary">공장 추가</button></div>
   </header>
   <main class="page">
     <div class="page-title">
-      <div><div class="eyebrow">SERVER OVERVIEW <span class="eyebrow-rule"></span> LIVE TELEMETRY</div><h1>공장 모니터링</h1><p>서버에 접속하지 않고 재고와 관측된 아이템 흐름을 확인하세요.</p></div>
+      <div><div class="eyebrow">Overview</div><h1>공장 대시보드</h1><p>공장별 재고와 변화를 한눈에 확인하세요.</p></div>
       <div class="timestamp"><span>마지막 새로고침</span><strong id="last-refresh">—</strong><span>10초마다 자동 갱신</span></div>
     </div>
     <section class="stats-grid" aria-label="요약 통계">
@@ -26,13 +26,13 @@
     </section>
     <section class="workspace">
       <aside class="panel factory-list-panel">
-        <div class="panel-top"><div><div class="eyebrow">YOUR FACTORIES</div><h2>공장 목록</h2></div><span id="factory-count" class="count">0</span></div>
+        <div class="panel-top"><div><div class="eyebrow">Factories</div><h2>공장 목록</h2></div><span id="factory-count" class="count">0</span></div>
         <div id="factory-list" class="factory-list"><div class="empty">데이터를 불러오는 중...</div></div>
-        <p class="list-foot">공장을 선택하면 상세 이력과 재고 그래프를 볼 수 있어요.</p>
+        <p class="list-foot">공장을 선택하면 기록과 재고 추이를 볼 수 있어요.</p>
       </aside>
       <div class="details">
         <section class="panel detail-header">
-          <div class="eyebrow">FACTORY DETAILS</div>
+          <div class="eyebrow">Details</div>
           <div class="detail-head-row"><div><h2 id="factory-name">공장을 선택하세요</h2><div class="item-description" id="factory-item">—</div></div><div id="status-tag" class="state-tag">측정 대기</div></div>
           <div class="detail-info"><span id="factory-coords">좌표 —</span><span id="factory-updated">마지막 측정 —</span></div>
           <div class="detail-metrics">
@@ -43,12 +43,12 @@
           <div class="capacity-block"><div class="capacity-label"><span>저장 공간 사용률 (설정된 최대 스택 기준)</span><span id="capacity-pct">—</span></div><div class="capacity-track"><div id="capacity-fill"></div></div></div>
         </section>
         <section class="panel chart-panel">
-          <div class="panel-top"><div><div class="eyebrow">INVENTORY HISTORY</div><h2>재고 추이</h2></div><div class="time-tabs"><button class="selected" data-hours="1">1시간</button><button data-hours="6">6시간</button><button data-hours="24">24시간</button></div></div>
+          <div class="panel-top"><div><div class="eyebrow">Inventory history</div><h2>재고 추이</h2></div><div class="time-tabs"><button class="selected" data-hours="1">1시간</button><button data-hours="6">6시간</button><button data-hours="24">24시간</button></div></div>
           <div class="chart-container"><svg id="stock-chart" viewBox="0 0 800 260" role="img" aria-label="시간에 따른 재고 변화 그래프"></svg><p id="chart-empty" class="chart-empty" hidden>측정 데이터가 아직 없습니다.</p></div>
           <div class="chart-footer"><span><i class="legend-dot"></i> 상자 재고</span><span id="sample-count">표본 —</span></div>
         </section>
         <section class="panel history-panel">
-          <div class="panel-top"><div><div class="eyebrow">OBSERVED CHANGES</div><h2>최근 입출고 이력</h2></div><span class="muted small">표본 간 순변화</span></div>
+          <div class="panel-top"><div><div class="eyebrow">Changes</div><h2>최근 변동 이력</h2></div><span class="muted small">표본 간 순변화</span></div>
           <div class="table-scroll"><table><thead><tr><th>측정 시각</th><th>분류</th><th>변화량</th><th>현재 재고</th></tr></thead><tbody id="events"><tr><td colspan="4" class="empty-cell">기록이 없습니다.</td></tr></tbody></table></div>
         </section>
         <p class="warning-note">※ 이 기록은 상자 재고의 <strong>순변화</strong>입니다. 동일한 10초 사이에 생산과 반출이 동시에 발생하면 각각의 실제 개수는 구분할 수 없습니다. 조회 실패 구간은 생산량으로 간주하지 않습니다.</p>
@@ -57,7 +57,7 @@
   </main>
   <dialog id="factory-dialog">
     <form id="factory-form" class="dialog-inner">
-      <div class="dialog-head"><div><div class="eyebrow">REGISTER FACTORY</div><h2>새 공장 등록</h2></div><button type="button" id="close-dialog" class="icon-button" aria-label="닫기">×</button></div>
+      <div class="dialog-head"><div><div class="eyebrow">New factory</div><h2>새 공장 등록</h2></div><button type="button" id="close-dialog" class="icon-button" aria-label="닫기">×</button></div>
       <label>공장 이름<input name="name" maxlength="80" required placeholder="예: 철 농장" /></label>
       <label>생산 아이템 ID<input name="item_id" required value="minecraft:iron_ingot" /></label>
       <label>차원<input name="dimension" required value="minecraft:overworld" /></label>
@@ -67,6 +67,6 @@
       <div class="dialog-actions"><button type="button" id="cancel-dialog" class="button secondary">취소</button><button type="submit" class="button primary">공장 등록</button></div>
     </form>
   </dialog>
-  <footer class="site-footer">FACTORY MONITOR v0.1 <span>●</span> 10초 주기 RCON 수집 <span>●</span> SQLite 영구 기록</footer>
+  <footer class="site-footer">Factory Monitor v0.1 <span>●</span> 10초 주기 RCON 수집 <span>●</span> SQLite 영구 기록</footer>
 </body>
 </html>
