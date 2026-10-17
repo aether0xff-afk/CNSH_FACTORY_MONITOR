@@ -83,16 +83,42 @@ Cloudflare에서 관리하는 도메인이 있어야 고정된 사용자 지정 
 
 고정 터널 연결은 Cloudflare가 서버로 아웃바운드 연결을 생성하므로, 공유기에서 `8000` 포트를 포워딩하지 않습니다.
 
-## 5. 재부팅 후 자동 시작 (Windows 작업 스케줄러)
+## 5. PowerShell을 닫아도 계속 실행 — Windows 자동 시작
 
-- 작업 스케줄러 → **작업 만들기**
-- **일반**: `FactoryMonitor`, `사용자의 로그온 여부에 관계없이 실행`, 필요할 때 충분한 파일 접근 권한이 있는 Windows 계정 선택
-- **트리거**: `시작할 때(At startup)`
-- **동작**: `프로그램 시작`, `C:\CNSH_FACTORY_MONITOR\start_server.cmd` (실제 압축 해제 경로로 수정)
-- **설정**: 실패 시 재시작, 기존 인스턴스가 있으면 새 인스턴스를 시작하지 않음
-- 작업을 한 번 수동으로 실행해 `http://127.0.0.1:8000`과 DB 새 기록이 정상인지 확인
+서버 컴퓨터 **관리자 PowerShell**에서 실행합니다. 기존에 수동으로 실행한 `start_server.cmd`가 있다면 먼저 `Ctrl+C`로 중지하세요.
 
-Cloudflare의 `cloudflared`는 위 명령대로 설치하면 **Windows 서비스**로 등록되며 컴퓨터가 켜질 때 시작됩니다.
+```powershell
+cd C:\CNSH_FACTORY_MONITOR
+git pull
+powershell -ExecutionPolicy Bypass -File .\install_background.ps1
+```
+
+이 명령은 **CNSH Factory Monitor** 작업을 Windows 작업 스케줄러에 등록합니다. 컴퓨터 시작 시 SYSTEM 계정으로 백그라운드 실행되므로 로그인이나 PowerShell 창이 필요 없습니다. 실패하면 최대 3번 재시도하며 실행 시간 제한은 해제됩니다. Python은 저장소의 `.conda\python.exe`를 사용하고 로그는 기존 `logs\server.log`에 기록됩니다.
+
+> 기존 수동 실행 서버가 8000번 포트를 사용하고 있다면 프로세스를 강제 종료하지 않습니다. 작업은 등록되지만 실행되지 않으므로, 기존 창에서 `Ctrl+C`로 서버를 종료하고 아래 명령을 실행하세요.
+
+```powershell
+Start-ScheduledTask -TaskName "CNSH Factory Monitor"
+```
+
+상태 확인:
+
+```powershell
+Get-ScheduledTask -TaskName "CNSH Factory Monitor"
+Test-NetConnection 127.0.0.1 -Port 8000
+Get-Content C:\CNSH_FACTORY_MONITOR\logs\server.log -Tail 30
+```
+
+제어 방법 (관리자 PowerShell):
+
+```powershell
+Stop-ScheduledTask -TaskName "CNSH Factory Monitor"
+Start-ScheduledTask -TaskName "CNSH Factory Monitor"
+# 자동 시작을 제거하려면:
+Unregister-ScheduledTask -TaskName "CNSH Factory Monitor" -Confirm:$false
+```
+
+이 작업은 Python 웹서버와 데이터 수집기만 자동 실행합니다. Minecraft 서버 및 `cloudflared` Windows 서비스는 별도로 실행해야 합니다. Windows가 꺼져 있거나 절전 상태면 웹서버도 작동하지 않습니다.
 
 ## 6. 백업 / 보안
 
