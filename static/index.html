@@ -1,60 +1,13 @@
 <!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="color-scheme" content="light" />
-  <title>Factory Monitor</title>
-  <link rel="stylesheet" href="/static/site.css?v=pastel-1" />
-  <script src="/static/app.js?v=pastel-1" defer></script>
-</head>
-<body>
-  <header class="site-header">
-    <div class="brand"><div class="brand-mark">▦</div><div><strong>Factory <span>Monitor</span></strong><small>Minecraft factory dashboard</small></div></div>
-    <div class="header-right"><span id="server-indicator" class="connection"><i></i> 연결 확인 중</span><button id="add-button" class="button primary">공장 추가</button></div>
-  </header>
-  <main class="page">
-    <div class="page-title">
-      <div><div class="eyebrow">Overview</div><h1>공장 대시보드</h1><p>공장별 재고와 변화를 한눈에 확인하세요.</p></div>
-      <div class="timestamp"><span>마지막 새로고침</span><strong id="last-refresh">—</strong><span>10초마다 자동 갱신</span></div>
-    </div>
-    <section class="stats-grid" aria-label="요약 통계">
-      <div class="metric"><div class="metric-heading">등록된 공장 <span>▦</span></div><div class="metric-value" id="total-factories">—</div><div class="metric-desc">모니터링 대상</div></div>
-      <div class="metric"><div class="metric-heading">정상 수집 <span class="green">●</span></div><div class="metric-value" id="live-factories">—</div><div class="metric-desc">데이터 조회 성공</div></div>
-      <div class="metric"><div class="metric-heading">최근 10분 관측 유입 <span>↗</span></div><div class="metric-value" id="total-in">—</div><div class="metric-desc">모든 공장 합계 · 중복 집계 가능</div></div>
-      <div class="metric"><div class="metric-heading">최근 10분 관측 유출 <span>↘</span></div><div class="metric-value" id="total-out">—</div><div class="metric-desc">실제 반출량과 다를 수 있음</div></div>
-    </section>
-    <section class="workspace">
-      <aside class="panel factory-list-panel">
-        <div class="panel-top"><div><div class="eyebrow">Factories</div><h2>공장 목록</h2></div><span id="factory-count" class="count">0</span></div>
-        <div id="factory-list" class="factory-list"><div class="empty">데이터를 불러오는 중...</div></div>
-        <p class="list-foot">공장을 선택하면 기록과 재고 추이를 볼 수 있어요.</p>
-      </aside>
-      <div class="details">
-        <section class="panel detail-header">
-          <div class="eyebrow">Details</div>
-          <div class="detail-head-row"><div><h2 id="factory-name">공장을 선택하세요</h2><div class="item-description" id="factory-item">—</div></div><div id="status-tag" class="state-tag">측정 대기</div></div>
-          <div class="detail-info"><span id="factory-coords">좌표 —</span><span id="factory-updated">마지막 측정 —</span></div>
-          <div class="detail-metrics">
-            <div><span>현재 재고</span><strong id="stock">—</strong><small id="stock-capacity">—</small></div>
-            <div><span>최근 10분 순변화</span><strong id="net-10m">—</strong><small id="net-sub">10분 윈도우 기준</small></div>
-            <div><span>순재고 증가 속도</span><strong id="rate-10m">—</strong><small>개/초 · 최근 10분</small></div>
-          </div>
-          <div class="capacity-block"><div class="capacity-label"><span>저장 공간 사용률 (설정된 최대 스택 기준)</span><span id="capacity-pct">—</span></div><div class="capacity-track"><div id="capacity-fill"></div></div></div>
-        </section>
-        <section class="panel chart-panel">
-          <div class="panel-top"><div><div class="eyebrow">Inventory history</div><h2>재고 추이</h2></div><div class="time-tabs"><button class="selected" data-hours="1">1시간</button><button data-hours="6">6시간</button><button data-hours="24">24시간</button></div></div>
-          <div class="chart-container"><svg id="stock-chart" viewBox="0 0 800 260" role="img" aria-label="시간에 따른 재고 변화 그래프"></svg><p id="chart-empty" class="chart-empty" hidden>측정 데이터가 아직 없습니다.</p></div>
-          <div class="chart-footer"><span><i class="legend-dot"></i> 상자 재고</span><span id="sample-count">표본 —</span></div>
-        </section>
-        <section class="panel history-panel">
-          <div class="panel-top"><div><div class="eyebrow">Changes</div><h2>최근 변동 이력</h2></div><span class="muted small">표본 간 순변화</span></div>
-          <div class="table-scroll"><table><thead><tr><th>측정 시각</th><th>분류</th><th>변화량</th><th>현재 재고</th></tr></thead><tbody id="events"><tr><td colspan="4" class="empty-cell">기록이 없습니다.</td></tr></tbody></table></div>
-        </section>
-        <p class="warning-note">※ 이 기록은 상자 재고의 <strong>순변화</strong>입니다. 동일한 10초 사이에 생산과 반출이 동시에 발생하면 각각의 실제 개수는 구분할 수 없습니다. 조회 실패 구간은 생산량으로 간주하지 않습니다.</p>
-      </div>
-    </section>
-  </main>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>공장 재고 · Factory Monitor</title><link rel="stylesheet" href="/static/site.css?v=ledger-2"><script src="/static/app.js?v=ledger-2" defer></script></head>
+<body><aside class="rail" aria-label="앱 탐색"><a class="brand" href="#" aria-label="Factory Monitor"><img src="/static/icons/grid.svg" alt="" width="24" height="24"><span>Factory Monitor</span></a><a class="rail-link active" href="#inventory" aria-label="공장 재고"><img src="/static/icons/buildings.svg" alt="" width="22" height="22"></a><div class="rail-bottom">FM</div></aside>
+<main id="inventory"><header class="page-header"><div><h1>공장 재고</h1><p><span id="total-factories">0</span>개 공장 <span class="separator">·</span> 정상 수집 <span id="live-factories">0</span>개</p></div><div class="header-actions"><span id="server-indicator" class="connection"><i></i>연결 확인 중</span><button id="add-button" class="button primary">공장 추가</button></div></header>
+<section aria-label="공장 목록" class="inventory-table"><div class="table-scroll"><table class="factory-table"><thead><tr><th scope="col">공장</th><th scope="col">수집 상태</th><th scope="col" class="numeric">현재 재고</th><th scope="col" class="numeric">순재고 증가 속도</th><th scope="col" class="numeric">최근 10분 순변화</th></tr></thead><tbody id="factory-list"><tr><td colspan="5" class="empty-cell">데이터를 불러오는 중...</td></tr></tbody></table></div></section>
+<section id="detail-workspace" class="analysis" aria-label="선택한 공장 상세" hidden><div class="chart-side"><div class="chart-heading"><div><h2><span id="factory-name">공장</span><span class="heading-separator">·</span>재고 추이</h2><p id="factory-item" class="muted">—</p></div><div class="time-tabs" role="group" aria-label="그래프 기간"><button class="selected" data-hours="1" aria-pressed="true">1시간</button><button data-hours="6" aria-pressed="false">6시간</button><button data-hours="24" aria-pressed="false">24시간</button></div></div><div class="chart-container"><svg id="stock-chart" viewBox="0 0 800 260" role="img" aria-label="시간에 따른 재고 변화 그래프"></svg><p id="chart-empty" class="chart-empty" hidden>측정 데이터가 아직 없습니다.</p></div><div class="chart-footer"><span><i class="legend-dot"></i>상자 재고</span><span id="sample-count">표본 —</span></div><div class="source-info"><span id="factory-coords">좌표 —</span><span id="factory-updated">마지막 측정 —</span></div></div>
+<aside class="detail-side"><div class="stock-heading"><span class="muted">현재 재고</span><span id="status-tag" class="state-tag">측정 대기</span></div><div class="stock-value" id="stock">—</div><p class="stock-capacity" id="stock-capacity">—</p><div class="capacity-label"><span>저장 공간 사용률</span><span id="capacity-pct">—</span></div><div class="capacity-track"><div id="capacity-fill"></div></div>
+<section class="flow-summary"><h3>최근 10분 변동</h3><div class="flow-grid"><div><span>관측 순유입</span><strong id="observed-in">—</strong></div><div><span>관측 순유출</span><strong id="observed-out">—</strong></div></div><p class="net-summary">순변화 <b id="net-10m">—</b><span>속도 <b id="rate-10m">—</b> 개/초</span></p><p class="coverage" id="net-sub">—</p></section>
+<section class="changes"><h3>최근 변동 이력</h3><div class="table-scroll"><table class="event-table"><thead><tr><th scope="col">측정 시각</th><th scope="col">순변화</th><th scope="col">재고</th></tr></thead><tbody id="events"></tbody></table></div></section><div class="collection-control"><span>데이터 수집</span><button class="button secondary" id="toggle-collection" type="button">일시정지</button></div><p id="action-error" role="alert" class="form-error"></p></aside></section>
+<p class="warning-note">상자 재고의 순변화 기준입니다. 생산과 반출이 동시에 발생하면 실제 생산량과 다를 수 있어요. 조회 실패 구간은 생산량으로 간주하지 않습니다.</p><footer><span>Factory Monitor</span><span><span id="last-refresh">—</span> 갱신 · <span id="poll-seconds">10</span>초마다 자동 수집</span></footer></main>
   <dialog id="factory-dialog">
     <form id="factory-form" class="dialog-inner">
       <div class="dialog-head"><div><div class="eyebrow">New factory</div><h2>새 공장 등록</h2></div><button type="button" id="close-dialog" class="icon-button" aria-label="닫기">×</button></div>
@@ -67,6 +20,4 @@
       <div class="dialog-actions"><button type="button" id="cancel-dialog" class="button secondary">취소</button><button type="submit" class="button primary">공장 등록</button></div>
     </form>
   </dialog>
-  <footer class="site-footer">Factory Monitor v0.1 <span>●</span> 10초 주기 RCON 수집 <span>●</span> SQLite 영구 기록</footer>
-</body>
-</html>
+</body></html>

@@ -5,7 +5,7 @@ const sign = v => (v > 0 ? "+" : "") + num(v);
 const time = s => s ? new Date(s).toLocaleString("ko-KR", {hour12:false,month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}) : "—";
 const iconFor = item => item.includes("gunpowder") ? "G" : item.includes("iron") ? "Fe" : item.includes("sugar_cane") ? "S" : "◻";
 const stateLabel = f => f.status === "paused" ? "수집 일시정지" : f.status === "error" ? "조회 오류" : f.status === "stale" ? "데이터 지연" : f.status === "waiting" ? "측정 대기" : f.stats_10m.in > 0 ? "유입 관측" : "조회 정상";
-const pillType = f => f.status === "ok" ? "good" : f.status === "error" ? "bad" : "warn";
+const pillType = f => f.status === "ok" ? "good" : f.status === "error" ? "bad" : f.status === "paused" || f.status === "waiting" ? "neutral" : "warn";
 const esc = value => String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 let factories = [], selectedId = null, hours = 1, historySeq = 0;
 
@@ -22,26 +22,28 @@ async function api(path, options = {}) {
 function updateHeader() {
   $("total-factories").textContent = num(factories.length);
   $("live-factories").textContent = num(factories.filter(f => f.status === "ok").length);
-  $("total-in").textContent = num(factories.reduce((s,f) => s + f.stats_10m.in, 0));
-  $("total-out").textContent = num(factories.reduce((s,f) => s + f.stats_10m.out, 0));
-  $("factory-count").textContent = num(factories.length);
   $("last-refresh").textContent = new Date().toLocaleTimeString("ko-KR", {hour12:false});
   $("server-indicator").className = "connection online";
-  $("server-indicator").innerHTML = "<i></i> 서비스 연결됨";
+  $("server-indicator").innerHTML = "<i></i>서비스 연결됨";
 }
 
 function renderList() {
   const container = $("factory-list");
+  const focusedId = container.contains(document.activeElement) ? document.activeElement.dataset.factoryId : null;
   container.replaceChildren();
-  if (!factories.length) {container.innerHTML = '<div class="empty">공장을 등록해 주세요.</div>';return;}
+  $("detail-workspace").hidden = !factories.length;
+  if (!factories.length) {container.innerHTML = '<tr><td colspan="5" class="empty-cell">아직 등록된 공장이 없어요. 공장 추가로 첫 공장을 등록하세요.</td></tr>';return;}
   for (const f of factories) {
-    const card = document.createElement("button");
-    card.type = "button";
-    card.className = "factory-card" + (f.id === selectedId ? " selected" : "");
-    card.setAttribute("aria-pressed", String(f.id === selectedId));
-    card.innerHTML = `<span class="factory-icon">${iconFor(f.item_id)}</span><span class="factory-meta"><b>${esc(f.name)}</b><small>${esc(f.item_id)}</small><span class="factory-card-bottom"><span class="pill ${pillType(f)}">${stateLabel(f)}</span><strong>${num(f.stock)}개</strong></span></span>`;
-    card.addEventListener("click", () => {selectedId = f.id;renderList();renderDetail();loadHistory();});
-    container.appendChild(card);
+    const row=document.createElement("tr");
+    const selected=f.id===selectedId;
+    row.className=selected?"selected":"";
+    const rate=f.stats_10m.net_per_second;
+    row.innerHTML=`<td><button type="button" class="factory-select" aria-pressed="${selected}"><b>${esc(f.name)}</b><small>${esc(f.item_id)}</small></button></td><td><span class="status ${pillType(f)}"><i></i>${stateLabel(f)}</span></td><td class="numeric stock-cell">${num(f.stock)}</td><td class="numeric">${rate===null?"—":(rate>0?"+":"")+rate.toFixed(3)}${rate===null?"":'<span class="unit"> 개/초</span>'}</td><td class="numeric">${f.stats_10m.covered_seconds?sign(f.stats_10m.net):"—"}</td>`;
+    row.querySelector("button").dataset.factoryId=f.id;
+    row.querySelector("button").addEventListener("click",()=>{selectedId=f.id;renderList();renderDetail();loadHistory();});
+    row.addEventListener("click",e=>{if(!e.target.closest("button"))row.querySelector("button").click();});
+    container.appendChild(row);
+    if(f.id===focusedId)row.querySelector("button").focus({preventScroll:true});
   }
 }
 
@@ -52,12 +54,16 @@ function renderDetail() {
   $("factory-item").textContent = f.item_id + " · " + f.dimension;
   $("status-tag").textContent = stateLabel(f);
   $("status-tag").className = "state-tag " + (f.status === "ok" ? "good" : f.status === "error" ? "bad" : "");
-  $("factory-coords").textContent = "⌖ " + f.containers.map(c => c.join(", ")).join(" · ");
+  $("factory-coords").textContent = "좌표 " + f.containers.map(c => c.join(", ")).join(" · ");
   $("factory-updated").textContent = "마지막 측정: " + time(f.last_checked);
   $("stock").textContent = num(f.stock);
+  $("observed-in").textContent = f.stats_10m.covered_seconds ? "+" + num(f.stats_10m.in) : "—";
+  $("observed-out").textContent = f.stats_10m.covered_seconds ? num(f.stats_10m.out) : "—";
+  $("toggle-collection").textContent = f.enabled ? "일시정지" : "수집 재개";
+  $("toggle-collection").disabled = toggling;
   $("stock-capacity").textContent = "최대 " + num(f.capacity) + "개";
-  $("net-10m").textContent = sign(f.stats_10m.net);
-  $("net-sub").textContent = "유입 +" + num(f.stats_10m.in) + " · 유출 -" + num(f.stats_10m.out) + " · 관측 " + num(f.stats_10m.covered_seconds) + "초";
+  $("net-10m").textContent = f.stats_10m.covered_seconds ? sign(f.stats_10m.net) : "—";
+  $("net-sub").textContent = "유효 관측 " + num(f.stats_10m.covered_seconds) + "초 · 최근 10분 기준";
   $("rate-10m").textContent = f.stats_10m.net_per_second === null ? "—" : f.stats_10m.net_per_second.toFixed(3);
   const pct = f.stock === null ? 0 : Math.min(100, f.stock / f.capacity * 100);
   $("capacity-pct").textContent = f.stock === null ? "—" : pct.toFixed(1) + "%";
@@ -116,10 +122,10 @@ async function loadHistory() {
     drawChart(data.history);
     $("sample-count").textContent = `${num(data.total_samples)}개 측정 표본`;
     const tbody=$("events");tbody.replaceChildren();
-    if (!data.events.length) tbody.innerHTML='<tr><td colspan="4" class="empty-cell">관측된 순변화가 없습니다.</td></tr>';
+    if (!data.events.length) tbody.innerHTML='<tr><td colspan="3" class="empty-cell">관측된 순변화가 없습니다.</td></tr>';
     for (const e of data.events) {
       const tr=document.createElement("tr"), up=e.delta>0;
-      tr.innerHTML=`<td>${esc(time(e.ts))}</td><td>${up?"순유입":"순유출"}</td><td class="${up?"positive":"negative"}">${sign(e.delta)}개</td><td>${num(e.stock)}개</td>`;
+      tr.innerHTML=`<td>${esc(new Date(e.ts).toLocaleTimeString("ko-KR",{hour12:false}))}</td><td class="${up?"positive":"negative"}">${sign(e.delta)}</td><td>${num(e.stock)}</td>`;
       tbody.appendChild(tr);
     }
   } catch(e){$("chart-empty").hidden=false;$("chart-empty").textContent="이력 조회 오류: "+e.message;}
@@ -129,6 +135,7 @@ async function refresh() {
   try {
     const data=await api("/api/factories");
     factories=data.factories;
+    $("poll-seconds").textContent = data.poll_seconds;
     if (!factories.some(f=>f.id===selectedId)) selectedId=factories[0]?.id||null;
     updateHeader();renderList();renderDetail();
     if (selectedId) loadHistory();
@@ -142,7 +149,7 @@ async function refresh() {
 for (const button of document.querySelectorAll(".time-tabs button")) {
   button.addEventListener("click",()=>{
     hours=Number(button.dataset.hours);
-    document.querySelectorAll(".time-tabs button").forEach(b=>b.classList.toggle("selected",b===button));
+    document.querySelectorAll(".time-tabs button").forEach(b=>{b.classList.toggle("selected",b===button);b.setAttribute("aria-pressed",String(b===button));});
     loadHistory();
   });
 }
@@ -166,5 +173,13 @@ $("factory-form").addEventListener("submit",async e=>{
       slots_per_container:Number(fd.get("slots_per_container")),stack_size:Number(fd.get("stack_size"))})});
     selectedId=created.id;dialog.close();form.reset();await refresh();
   }catch(err){$("form-error").textContent=err.message;}
+});
+let toggling=false;
+$("toggle-collection").addEventListener("click",async()=>{
+  const f=factories.find(f=>f.id===selectedId);if(!f||toggling)return;
+  toggling=true;$("toggle-collection").disabled=true;$("action-error").textContent="";
+  try{await api(`/api/factories/${encodeURIComponent(f.id)}/enabled?enabled=${!f.enabled}`,{method:"PATCH"});await refresh();}
+  catch(e){$("action-error").textContent="수집 상태 변경 실패: "+e.message;}
+  finally{toggling=false;renderDetail();}
 });
 refresh();setInterval(refresh,10000);
